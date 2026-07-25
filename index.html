@@ -289,7 +289,6 @@
     </footer>
 
     <script>
-        // Artists dataset matching the reference image layout and structure
         const artistsData = [
             {
                 name: "Yo Maps",
@@ -366,7 +365,7 @@
             }
         ];
 
-        let currentView = 'artists'; // 'artists' or 'tracks'
+        let currentView = 'artists';
 
         function renderArtists(list) {
             const grid = document.getElementById('musicGrid');
@@ -385,7 +384,7 @@
                         </div>
                         <div class="card-content">
                             <div class="song-title" title="${artist.name}">${artist.name}</div>
-                            <div class="artist-name">Explore Tracks</div>
+                            <div class="artist-name">View Tracks</div>
                         </div>
                     </div>
                 `;
@@ -447,7 +446,6 @@
             }
         }
 
-        // Initialize view
         renderArtists(artistsData);
     </script>
 </body>
