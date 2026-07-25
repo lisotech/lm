@@ -208,7 +208,15 @@
             margin-bottom: 0.4rem;
         }
 
-        .download-btn {
+        .action-buttons {
+            display: flex;
+            gap: 0.4rem;
+            width: 100%;
+            justify-content: center;
+            margin-top: 0.3rem;
+        }
+
+        .player-btn, .download-btn {
             background-color: transparent;
             border: 1px solid var(--primary-color);
             color: var(--primary-color);
@@ -218,11 +226,12 @@
             text-decoration: none;
             font-size: 0.7rem;
             font-weight: 600;
+            cursor: pointer;
             transition: background-color 0.2s, color 0.2s;
-            margin-top: 0.2rem;
+            flex: 1;
         }
 
-        .download-btn:hover {
+        .player-btn:hover, .download-btn:hover {
             background-color: var(--primary-color);
             color: white;
         }
@@ -336,14 +345,14 @@
                 cover: "albumcover.png",
                 tracks: [
                     { title: "Sunset Boulevard", artist: "Chile One Mr Z...", cover: "albumcover.png", audio: "1.mp3" },
-                    { title: "Fwekeleni", artist: "Chile One Mr Z...", cover: "assets/images/track4.png", audio: "1.mp3" }
+                    { title: "Fwekeleni", artist: "Chile One Mr Z...", cover: "albumcover.png", audio: "1.mp3" }
                 ]
             },
             {
                 name: "Driemo Mw",
                 cover: "albumcover.png",
                 tracks: [
-                    { title: "No More", artist: "Driemo Mw", cover: "albumcoverpng", audio: "1.mp3" },
+                    { title: "No More", artist: "Driemo Mw", cover: "albumcover.png", audio: "1.mp3" },
                     { title: "Pano", artist: "Driemo Mw", cover: "albumcover.png", audio: "1.mp3" }
                 ]
             },
@@ -366,6 +375,8 @@
         ];
 
         let currentView = 'artists';
+        let currentAudio = null;
+        let currentPlayingBtn = null;
 
         function renderArtists(list) {
             const grid = document.getElementById('musicGrid');
@@ -392,6 +403,12 @@
         }
 
         function openArtistTracks(artistName) {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+                currentPlayingBtn = null;
+            }
+
             currentView = 'tracks';
             const artist = artistsData.find(a => a.name === artistName);
             if (!artist) return;
@@ -404,7 +421,8 @@
             backBtn.style.display = 'block';
             grid.innerHTML = '';
 
-            artist.tracks.forEach((track) => {
+            artist.tracks.forEach((track, index) => {
+                const audioId = `audio-${artistName}-${index}`.replace(/[^a-zA-Z0-9-_]/g, '');
                 grid.innerHTML += `
                     <div class="music-card">
                         <div class="card-img-container">
@@ -413,14 +431,57 @@
                         <div class="card-content">
                             <div class="song-title" title="${track.title}">${track.title}</div>
                             <div class="artist-name">${track.artist}</div>
-                            <a href="${track.audio}" download class="download-btn" target="_blank">Download MP3</a>
+                            <audio id="${audioId}" src="${track.audio}"></audio>
+                            <div class="action-buttons">
+                                <button class="player-btn" id="btn-${audioId}" onclick="togglePlay('${audioId}')">Play ▶</button>
+                                <a href="${track.audio}" download class="download-btn" target="_blank">Download</a>
+                            </div>
                         </div>
                     </div>
                 `;
             });
         }
 
+        function togglePlay(audioId) {
+            const audioElem = document.getElementById(audioId);
+            const btnElem = document.getElementById(`btn-${audioId}`);
+
+            if (currentAudio && currentAudio !== audioElem) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                if (currentPlayingBtn) {
+                    currentPlayingBtn.innerText = "Play ▶";
+                }
+            }
+
+            if (audioElem.paused) {
+                audioElem.play().then(() => {
+                    currentAudio = audioElem;
+                    currentPlayingBtn = btnElem;
+                    btnElem.innerText = "Pause ⏸";
+                }).catch(e => {
+                    alert("Audio source could not be played.");
+                });
+            } else {
+                audioElem.pause();
+                btnElem.innerText = "Play ▶";
+                currentAudio = null;
+                currentPlayingBtn = null;
+            }
+
+            audioElem.onended = function() {
+                btnElem.innerText = "Play ▶";
+                currentAudio = null;
+                currentPlayingBtn = null;
+            };
+        }
+
         function resetView() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+                currentPlayingBtn = null;
+            }
             currentView = 'artists';
             document.getElementById('searchInput').value = '';
             renderArtists(artistsData);
