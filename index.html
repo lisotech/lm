@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lite Music - Fresh Hits & Audio</title>
+    <style>
+        :root {
+            --primary-color: #ff3366;
+            --bg-color: #f4f4f4;
+            --card-bg: #ffffff;
+            --text-color: #121212;
+            --text-muted: #666666;
+            --header-bg: #ffffff;
+            --border-color: #dddddd;
+            --search-bg: #e1e1e1;
+            --search-text: #121212;
+        }
+
+        .dark-mode {
+            --primary-color: #ff3366;
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #ffffff;
+            --text-muted: #b3b3b3;
+            --header-bg: #000;
+            --border-color: #282828;
+            --search-bg: #282828;
+            --search-text: #fff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--header-bg);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        /* Boomplay-inspired compact search engine bar */
+        .search-bar input {
+            padding: 0.3rem 0.7rem;
+            border-radius: 12px;
+            border: none;
+            outline: none;
+            width: 140px;
+            background-color: var(--search-bg);
+            color: var(--search-text);
+            font-size: 0.8rem;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-btn {
+            background: var(--search-bg);
+            color: var(--text-color);
+            border: none;
+            padding: 0.3rem 0.6rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .theme-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 10px;
+        }
+
+        .back-btn {
+            background-color: var(--search-bg);
+            color: var(--text-color);
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: none;
+        }
+
+        .back-btn:hover {
+            opacity: 0.8;
+        }
+
+        /* Music Grid - 3x3 layout */
+        .music-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .music-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .music-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+        /* Small circular profile style photo matching reference image */
+        .card-img-container {
+            position: relative;
+            width: 85px;
+            height: 85px;
+            margin-bottom: 0.6rem;
+        }
+
+        .card-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            gap: 0.2rem;
+            align-items: center;
+        }
+
+        .song-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        .artist-name {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .download-btn {
+            background-color: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 0.7rem;
+            font-weight: 600;
+            transition: background-color 0.2s, color 0.2s;
+            margin-top: 0.2rem;
+        }
+
+        .download-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--header-bg);
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 3rem;
+        }
+
+        footer p {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Responsive */
+        @media(max-width: 768px) {
+            .music-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media(max-width: 480px) {
+            .music-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <div class="header-left">
+            <a href="#" class="logo" onclick="resetView(); return false;">Lite Music</a>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search artist..." onkeyup="filterMusic()">
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()">🌙</button>
+        </div>
+    </header>
+
+    <!-- Main Section -->
+    <div class="container">
+        <div class="section-header">
+            <h2 id="sectionTitle">Pick artists & genres</h2>
+            <button class="back-btn" id="backBtn" onclick="resetView()">← Back</button>
+        </div>
+        <div class="music-grid" id="musicGrid">
+            <!-- Artist cards / Track cards injected dynamically via JavaScript -->
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer>
+        <p>&copy; 2026 Lite Music. All rights reserved.</p>
+        <p>Fast streaming and lightweight music downloader platform.</p>
+    </footer>
+
+    <script>
+        // Artists dataset matching the reference image layout and structure
+        const artistsData = [
+            {
+                name: "Yo Maps",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300",
+                tracks: [
+                    { title: "African Sunrise Vibe", artist: "Yo Maps", cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+                    { title: "Finally", artist: "Yo Maps", cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
+                    { title: "Aweah", artist: "Yo Maps", cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" }
+                ]
+            },
+            {
+                name: "Pop",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300",
+                tracks: [
+                    { title: "Global Pop Anthem", artist: "Various Artists", cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" },
+                    { title: "Neon Lights", artist: "Various Artists", cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" }
+                ]
+            },
+            {
+                name: "Y Celeb",
+                cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300",
+                tracks: [
+                    { title: "Copperbelt bounce", artist: "Y Celeb", cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3" },
+                    { title: "Mwango", artist: "Y Celeb", cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3" }
+                ]
+            },
+            {
+                name: "Gunna",
+                cover: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=300",
+                tracks: [
+                    { title: "Smooth Chillout", artist: "Gunna", cover: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" },
+                    { title: "Drip Season Vibe", artist: "Gunna", cover: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3" }
+                ]
+            },
+            {
+                name: "Drake",
+                cover: "https://images.unsplash.com/photo-1526478806334-5fd488fcaabc?w=300",
+                tracks: [
+                    { title: "Zambezi River Flow", artist: "Drake", cover: "https://images.unsplash.com/photo-1526478806334-5fd488fcaabc?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+                    { title: "Midnight City", artist: "Drake", cover: "https://images.unsplash.com/photo-1526478806334-5fd488fcaabc?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" }
+                ]
+            },
+            {
+                name: "Chile One Mr Z...",
+                cover: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300",
+                tracks: [
+                    { title: "Sunset Boulevard", artist: "Chile One Mr Z...", cover: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
+                    { title: "Fwekeleni", artist: "Chile One Mr Z...", cover: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" }
+                ]
+            },
+            {
+                name: "Driemo Mw",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300",
+                tracks: [
+                    { title: "No More", artist: "Driemo Mw", cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" },
+                    { title: "Pano", artist: "Driemo Mw", cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3" }
+                ]
+            },
+            {
+                name: "YoungBoy Nev...",
+                cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300",
+                tracks: [
+                    { title: "Top Tracks Mix", artist: "YoungBoy Nev...", cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3" },
+                    { title: "Lonely Child", artist: "YoungBoy Nev...", cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" }
+                ]
+            },
+            {
+                name: "Chef 187",
+                cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300",
+                tracks: [
+                    { title: "Nomine", artist: "Chef 187", cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3" },
+                    { title: "Coordinate", artist: "Chef 187", cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" }
+                ]
+            }
+        ];
+
+        let currentView = 'artists'; // 'artists' or 'tracks'
+
+        function renderArtists(list) {
+            const grid = document.getElementById('musicGrid');
+            const title = document.getElementById('sectionTitle');
+            const backBtn = document.getElementById('backBtn');
+            
+            title.innerText = "Pick artists & genres you like";
+            backBtn.style.display = 'none';
+            grid.innerHTML = '';
+            
+            list.forEach((artist) => {
+                grid.innerHTML += `
+                    <div class="music-card" onclick="openArtistTracks('${artist.name}')">
+                        <div class="card-img-container">
+                            <img src="${artist.cover}" alt="${artist.name}">
+                        </div>
+                        <div class="card-content">
+                            <div class="song-title" title="${artist.name}">${artist.name}</div>
+                            <div class="artist-name">Explore Tracks</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openArtistTracks(artistName) {
+            currentView = 'tracks';
+            const artist = artistsData.find(a => a.name === artistName);
+            if (!artist) return;
+
+            const grid = document.getElementById('musicGrid');
+            const title = document.getElementById('sectionTitle');
+            const backBtn = document.getElementById('backBtn');
+
+            title.innerText = `${artist.name} - Tracks`;
+            backBtn.style.display = 'block';
+            grid.innerHTML = '';
+
+            artist.tracks.forEach((track) => {
+                grid.innerHTML += `
+                    <div class="music-card">
+                        <div class="card-img-container">
+                            <img src="${track.cover}" alt="${track.title}">
+                        </div>
+                        <div class="card-content">
+                            <div class="song-title" title="${track.title}">${track.title}</div>
+                            <div class="artist-name">${track.artist}</div>
+                            <a href="${track.audio}" download class="download-btn" target="_blank">Download MP3</a>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function resetView() {
+            currentView = 'artists';
+            document.getElementById('searchInput').value = '';
+            renderArtists(artistsData);
+        }
+
+        function filterMusic() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            if (currentView === 'artists') {
+                const filtered = artistsData.filter(artist => 
+                    artist.name.toLowerCase().includes(query)
+                );
+                renderArtists(filtered);
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const btn = document.getElementById('themeToggleBtn');
+            if(document.body.classList.contains('dark-mode')) {
+                btn.innerText = "☀️";
+            } else {
+                btn.innerText = "🌙";
+            }
+        }
+
+        // Initialize view
+        renderArtists(artistsData);
+    </script>
+</body>
+</html>
