@@ -7,7 +7,7 @@
     <style>
         :root {
             --primary-color: #ff3366;
-            --bg-color: #f4f4f4;
+            --bg-color: #fafafa;
             --card-bg: #ffffff;
             --text-color: #121212;
             --text-muted: #666666;
@@ -15,18 +15,6 @@
             --border-color: #dddddd;
             --search-bg: #e1e1e1;
             --search-text: #121212;
-        }
-
-        .dark-mode {
-            --primary-color: #ff3366;
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-color: #ffffff;
-            --text-muted: #b3b3b3;
-            --header-bg: #000;
-            --border-color: #282828;
-            --search-bg: #282828;
-            --search-text: #fff;
         }
 
         * {
@@ -88,21 +76,6 @@
         .header-right {
             display: flex;
             align-items: center;
-        }
-
-        .theme-btn {
-            background: var(--search-bg);
-            color: var(--text-color);
-            border: none;
-            padding: 0.3rem 0.6rem;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .theme-btn:hover {
-            opacity: 0.8;
         }
 
         /* Main Container */
@@ -236,15 +209,52 @@
             color: white;
         }
 
-        /* Footer */
+        /* Footer Animation Styles */
         footer {
-            background-color: var(--header-bg);
+            background-color: #1e3a8a;
             border-top: 1px solid var(--border-color);
             text-align: center;
             padding: 1.5rem;
             font-size: 0.85rem;
-            color: var(--text-muted);
+            color: white;
             margin-top: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer-flowers-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .falling-flower {
+            position: absolute;
+            top: -20px;
+            font-size: 16px;
+            user-select: none;
+            animation: fallAnimation linear infinite;
+        }
+
+        @keyframes fallAnimation {
+            0% {
+                transform: translateY(-20px) rotate(0deg);
+                opacity: 0.9;
+            }
+            100% {
+                transform: translateY(160px) rotate(360deg);
+                opacity: 0.2;
+            }
+        }
+
+        .footer-content-inner {
+            position: relative;
+            z-index: 2;
         }
 
         footer p {
@@ -265,7 +275,7 @@
         }
     </style>
 </head>
-<body class="dark-mode">
+<body>
 
     <!-- Header Section -->
     <header>
@@ -274,9 +284,6 @@
             <div class="search-bar">
                 <input type="text" id="searchInput" placeholder="Search artist or track..." onkeyup="globalSearch()">
             </div>
-        </div>
-        <div class="header-right">
-            <button class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()">☀️</button>
         </div>
     </header>
 
@@ -291,76 +298,78 @@
         </div>
     </div>
 
-    <!-- Custom styled compact footer -->
-  <footer style="background:#3b7c96; color:white; padding:15px 10px; text-align:center;">
+    <!-- Custom styled compact footer with blue background and dropping green/orange flowers -->
+    <footer>
+        <div class="footer-flowers-container" id="flowerContainer"></div>
+        <div class="footer-content-inner">
+            <!-- Colored Box Social Layout with Vector Emblems inside -->
+            <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-bottom: 10px;">
 
-    <!-- Colored Box Social Layout with Vector Emblems inside -->
-    <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-bottom: 10px;">
+               <!-- Phone Call Layout -->
+              <a href="tel:+260974101130" style="
+                    width:105px;
+                    height:38px;
+                    background-color: #008080;
+                    border-radius:4px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    gap: 6px;
+                    color:white;
+                    font-size:11px;
+                    font-weight:600;
+                    text-decoration:none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                Call Us
+              </a>
+              <!-- Facebook Layout -->
+              <a href="https://www.facebook.com/lisotechinnovations" target="_blank" style="
+                    width:105px;
+                    height:38px;
+                    background-color: #1877F2;
+                    border-radius:4px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    gap: 6px;
+                    color:white;
+                    font-size:11px;
+                    font-weight:600;
+                    text-decoration:none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                Facebook
+              </a>
 
-       <!-- Phone Call Layout: Dark Teal/Slate Background -->
-      <a href="tel:+260974101130" style="
-            width:105px;
-            height:38px;
-            background-color: #008080;
-            border-radius:4px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            gap: 6px;
-            color:white;
-            font-size:11px;
-            font-weight:600;
-            text-decoration:none;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-        Call Us
-      </a>
-      <!-- Facebook Layout: Blue Background -->
-      <a href="https://www.facebook.com/lisotechinnovations" target="_blank" style="
-            width:105px;
-            height:38px;
-            background-color: #1877F2;
-            border-radius:4px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            gap: 6px;
-            color:white;
-            font-size:11px;
-            font-weight:600;
-            text-decoration:none;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-        Facebook
-      </a>
-
-      <!-- WhatsApp Layout: Green Background -->
-      <a href="https://wa.me/message/NEGCGNOZ4BOHP1" target="_blank" style="
-            width:105px;
-            height:38px;
-            background-color: #25D366;
-            border-radius:4px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            gap: 6px;
-            color:white;
-            font-size:11px;
-            font-weight:600;
-            text-decoration:none;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.933-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.933 11.892-1.99-.001-3.95-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-2.646-1.027-5.132-2.9-7.005-1.873-1.873-4.363-2.896-7.01-2.898-5.448 0-9.886 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479c0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.774-.725 2.022-1.424.248-.699.248-1.299.174-1.424z"/></svg>
-        WhatsApp
-      </a>
-    </div>
-    
-    <div>
-      <p style="margin:5px 0; font-size:13px; opacity:0.95;">
-        © Lite Music Media || All Rights Reserved.
-      </p>
-    </div>
-    
-    <div style="margin-top: 5px;">
-      <marquee style="font-size:12px; max-width: 500px; margin: 0 auto; display: block;">Designed @Lisotech Innovations. call or whatsapp +260974101130</marquee>
-    </div>
-  </footer>
+              <!-- WhatsApp Layout -->
+              <a href="https://wa.me/message/NEGCGNOZ4BOHP1" target="_blank" style="
+                    width:105px;
+                    height:38px;
+                    background-color: #25D366;
+                    border-radius:4px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    gap: 6px;
+                    color:white;
+                    font-size:11px;
+                    font-weight:600;
+                    text-decoration:none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.933-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.933 11.892-1.99-.001-3.95-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-2.646-1.027-5.132-2.9-7.005-1.873-1.873-4.363-2.896-7.01-2.898-5.448 0-9.886 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479c0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.774-.725 2.022-1.424.248-.699.248-1.299.174-1.424z"/></svg>
+                WhatsApp
+              </a>
+            </div>
+            
+            <div>
+              <p style="margin:5px 0; font-size:13px; opacity:0.95;">
+                © Lite Music Media || All Rights Reserved.
+              </p>
+            </div>
+            
+            <div style="margin-top: 5px;">
+              <marquee style="font-size:12px; max-width: 500px; margin: 0 auto; display: block;">Designed @Lisotech Innovations. call or whatsapp +260974101130</marquee>
+            </div>
+        </div>
+    </footer>
 
     <script>
         const artistsData = [
@@ -585,7 +594,6 @@
                 return;
             }
 
-            // If user is inside a specific artist view, filter only that artist's tracks
             if (currentView === 'tracks' && currentActiveArtist) {
                 const artist = artistsData.find(a => a.name === currentActiveArtist);
                 if (artist) {
@@ -598,18 +606,15 @@
                 return;
             }
 
-            // Global search across all artists AND all individual tracks worldwide from the home view
             currentView = 'global-search';
             title.innerText = `Search Results for "${query}"`;
             backBtn.style.display = 'block';
             grid.innerHTML = '';
 
-            // 1. Find matching artists
             const matchingArtists = artistsData.filter(artist => 
                 artist.name.toLowerCase().includes(query)
             );
 
-            // 2. Find matching tracks across all artists
             let matchingTracks = [];
             artistsData.forEach(artist => {
                 artist.tracks.forEach(track => {
@@ -624,7 +629,6 @@
                 return;
             }
 
-            // Render matching artists first
             matchingArtists.forEach((artist) => {
                 grid.innerHTML += `
                     <div class="music-card" onclick="openArtistTracks('${artist.name}')">
@@ -639,7 +643,6 @@
                 `;
             });
 
-            // Render matching tracks
             matchingTracks.forEach((track, index) => {
                 const audioId = `search-audio-${index}`;
                 grid.innerHTML += `
@@ -661,17 +664,30 @@
             });
         }
 
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            const btn = document.getElementById('themeToggleBtn');
-            if(document.body.classList.contains('dark-mode')) {
-                btn.innerText = "☀️";
-            } else {
-                btn.innerText = "🌙";
+        function initFooterFlowers() {
+            const container = document.getElementById('flowerContainer');
+            if (!container) return;
+            
+            const flowerEmojis = ['🌸', '🌼', '🌺', '🌻']; 
+            const flowerCount = 12;
+
+            for (let i = 0; i < flowerCount; i++) {
+                const span = document.createElement('span');
+                span.className = 'falling-flower';
+                span.innerText = flowerEmojis[Math.floor(Math.random() * flowerEmojis.length)];
+                
+                span.style.left = Math.random() * 100 + '%';
+                span.style.animationDuration = (3 + Math.random() * 4) + 's';
+                span.style.animationDelay = (Math.random() * 5) + 's';
+                
+                span.style.fontSize = (12 + Math.random() * 10) + 'px';
+                
+                container.appendChild(span);
             }
         }
 
         renderArtists(artistsData);
+        initFooterFlowers();
     </script>
 </body>
 </html>
