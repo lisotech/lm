@@ -348,57 +348,13 @@
             color: var(--text-muted);
         }
 
-        .social-login-btn {
-            background-color: #ffffff;
-            color: #333333;
-            border: 1px solid var(--border-color);
-            padding: 0.5rem;
-            border-radius: 4px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 0.8rem;
-            font-size: 0.8rem;
-        }
-
-        .social-login-btn:hover {
-            background-color: #f1f5f9;
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 0.8rem 0;
-            color: var(--text-muted);
-            font-size: 0.75rem;
-        }
-
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .divider::before {
-            margin-right: .5em;
-        }
-
-        .divider::after {
-            margin-left: .5em;
-        }
-
         .toggle-auth-mode {
             background: none;
             border: none;
             color: var(--primary-color);
             cursor: pointer;
             font-size: 0.75rem;
-            margin-top: 0.6rem;
+            margin-top: 0.8rem;
             text-decoration: underline;
         }
 
@@ -508,18 +464,11 @@
         <div class="modal-card">
             <button class="close-modal" onclick="closeAuthModal()">&times;</button>
             <h3 id="modalTitle">Sign In</h3>
-            
-            <button class="social-login-btn" onclick="handleGoogleAuth()">
-                <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-8.87z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.95H1.2v3.15C3.18 21.35 7.27 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.25c-.25-.72-.38-1.49-.38-2.25s.13-1.53.38-2.25V6.6H1.2C.44 8.13 0 9.87 0 12s.44 3.87 1.2 5.4l4.08-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.27 0 3.18 2.65 1.2 6.6l4.08 3.15c.95-2.84 3.6-4.95 6.72-4.95z"/></svg>
-                Continue with Google
-            </button>
-
-            <div class="divider">OR</div>
 
             <form id="authForm" onsubmit="submitAuthForm(event)">
                 <div class="form-group">
-                    <label id="usernameLabel">Username or Email</label>
-                    <input type="text" id="authUsername" required placeholder="Enter username/email">
+                    <label id="usernameLabel">Username</label>
+                    <input type="text" id="authUsername" required placeholder="Enter username">
                 </div>
                 <div class="form-group">
                     <label>Password</label>
@@ -922,14 +871,6 @@
             document.getElementById('modalTitle').innerText = isRegisterMode ? 'Create Account' : 'Sign In';
             document.getElementById('authSubmitBtn').innerText = isRegisterMode ? 'Register' : 'Sign In';
             document.getElementById('toggleModeBtn').innerText = isRegisterMode ? 'Already have an account? Sign In' : 'Need an account? Register';
-        }
-
-        function handleGoogleAuth() {
-            currentUser = { username: 'Google User', role: 'client' };
-            localStorage.setItem('zamlite_current_user', JSON.stringify(currentUser));
-            closeAuthModal();
-            updateUIState();
-            alert('Successfully signed in with Google!');
         }
 
         function submitAuthForm(event) {
