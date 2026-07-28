@@ -776,6 +776,23 @@
                     `;
                 }
 
+                let actionButtonsHTML = '';
+                if (track.audio) {
+                    actionButtonsHTML = `
+                        <audio id="${audioId}" src="${track.audio}"></audio>
+                        <div class="action-buttons">
+                            <button class="player-btn" id="btn-${audioId}" onclick="togglePlay('${audioId}')">Play ▶</button>
+                            <a href="${track.audio}" download="${track.title}.mp3" class="download-btn">Download</a>
+                        </div>
+                    `;
+                } else {
+                    actionButtonsHTML = `
+                        <div class="action-buttons">
+                            <a href="${track.zip}" download="${track.title}.zip" class="download-btn" style="flex:1;">Download Zip Bundle</a>
+                        </div>
+                    `;
+                }
+
                 grid.innerHTML += `
                     <div class="music-card">
                         ${adminControls}
@@ -785,11 +802,7 @@
                         <div class="card-content">
                             <div class="song-title" title="${track.title}">${track.title}</div>
                             <div class="artist-name">${track.artist}</div>
-                            <audio id="${audioId}" src="${track.audio}"></audio>
-                            <div class="action-buttons">
-                                <button class="player-btn" id="btn-${audioId}" onclick="togglePlay('${audioId}')">Play ▶</button>
-                                <a href="${track.audio}" download="${track.title}.mp3" class="download-btn">Download</a>
-                            </div>
+                            ${actionButtonsHTML}
                         </div>
                     </div>
                 `;
@@ -909,6 +922,23 @@
 
             matchingTracks.forEach((track, index) => {
                 const audioId = `search-audio-${index}`;
+                let actionButtonsHTML = '';
+                if (track.audio) {
+                    actionButtonsHTML = `
+                        <audio id="${audioId}" src="${track.audio}"></audio>
+                        <div class="action-buttons">
+                            <button class="player-btn" id="btn-${audioId}" onclick="togglePlay('${audioId}')">Play ▶</button>
+                            <a href="${track.audio}" download="${track.title}.mp3" class="download-btn">Download</a>
+                        </div>
+                    `;
+                } else {
+                    actionButtonsHTML = `
+                        <div class="action-buttons">
+                            <a href="${track.zip}" download="${track.title}.zip" class="download-btn" style="flex:1;">Download Zip Bundle</a>
+                        </div>
+                    `;
+                }
+
                 grid.innerHTML += `
                     <div class="music-card">
                         <div class="card-img-container">
@@ -917,11 +947,7 @@
                         <div class="card-content">
                             <div class="song-title" title="${track.title}">${track.title}</div>
                             <div class="artist-name">${track.artist}</div>
-                            <audio id="${audioId}" src="${track.audio}"></audio>
-                            <div class="action-buttons">
-                                <button class="player-btn" id="btn-${audioId}" onclick="togglePlay('${audioId}')">Play ▶</button>
-                                <a href="${track.audio}" download="${track.title}.mp3" class="download-btn">Download</a>
-                            </div>
+                            ${actionButtonsHTML}
                         </div>
                     </div>
                 `;
@@ -1032,20 +1058,25 @@
                         <h3>Client Upload Dashboard (${currentUser.username})</h3>
                         <form onsubmit="handleSongUpload(event)">
                             <div class="form-group">
-                                <label>1. Music Category</label>
-                                <input type="text" id="uploadCategory" required placeholder="Enter music category">
+                                <label>1. Music Category / Upload Type</label>
+                                <select id="uploadType" required onchange="handleUploadTypeChange()">
+                                    <option value="Single">Single</option>
+                                    <option value="Album">Album</option>
+                                    <option value="Mix">Mix</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label>2. Artist Name</label>
                                 <input type="text" id="uploadArtistName" required placeholder="Enter artist name">
                             </div>
                             <div class="form-group">
-                                <label>3. Song Title</label>
-                                <input type="text" id="uploadTitle" required placeholder="Enter song title">
+                                <label>3. Song Title / Release Name</label>
+                                <input type="text" id="uploadTitle" required placeholder="Enter song or release title">
                             </div>
-                            <div class="form-group">
-                                <label>4. Choose Audio File (mp3)</label>
-                                <input type="file" id="uploadAudioFile" accept="audio/mp3,audio/*" required>
+                            <div class="form-group" id="fileInputGroup">
+                                <label id="fileInputLabel">4. Choose Audio File (mp3)</label>
+                                <input type="file" id="uploadAudioFile" accept="audio/mp3,audio/*,.zip" required>
+                                <small id="fileInputHint" style="color: var(--text-muted); font-size: 0.7rem; margin-top: 2px;">Allows 1 audio file (.mp3)</small>
                             </div>
                             <div class="form-group">
                                 <label>5. Choose Cover Image</label>
@@ -1058,61 +1089,137 @@
             }
         }
 
+        function handleUploadTypeChange() {
+            const type = document.getElementById('uploadType').value;
+            const fileInput = document.getElementById('uploadAudioFile');
+            const hint = document.getElementById('fileInputHint');
+            const label = document.getElementById('fileInputLabel');
+
+            if (type === 'Single') {
+                label.innerText = '4. Choose Audio File (mp3)';
+                fileInput.accept = 'audio/mp3,audio/*';
+                fileInput.multiple = false;
+                hint.innerText = 'Allows exactly 1 audio file (.mp3)';
+            } else if (type === 'Album') {
+                label.innerText = '4. Choose Audio Files (5 to 15 songs) or Zip File';
+                fileInput.accept = 'audio/mp3,audio/*,.zip';
+                fileInput.multiple = true;
+                hint.innerText = 'Select between 5 to 15 mp3 files or a downloadable .zip archive';
+            } else if (type === 'Mix') {
+                label.innerText = '4. Choose Audio Files (1 to 20 songs) or Zip File';
+                fileInput.accept = 'audio/mp3,audio/*,.zip';
+                fileInput.multiple = true;
+                hint.innerText = 'Select between 1 to 20 mp3 files or a downloadable .zip archive';
+            }
+        }
+
         function handleSongUpload(event) {
             event.preventDefault();
-            const categoryName = document.getElementById('uploadCategory').value.trim();
+            const uploadType = document.getElementById('uploadType').value;
             const artistName = document.getElementById('uploadArtistName').value.trim();
             const songTitle = document.getElementById('uploadTitle').value.trim();
             const audioInput = document.getElementById('uploadAudioFile');
             const coverInput = document.getElementById('uploadCoverFile');
 
             if (!audioInput.files || audioInput.files.length === 0) {
-                alert('Please select an audio file.');
+                alert('Please select an audio file or archive.');
                 return;
             }
 
-            const audioFile = audioInput.files[0];
+            const files = audioInput.files;
             const coverFile = (coverInput.files && coverInput.files.length > 0) ? coverInput.files[0] : null;
 
-            let readerAudio = new FileReader();
-            readerAudio.onload = function(audioEvent) {
-                const audioBase64 = audioEvent.target.result;
-
-                if (coverFile) {
-                    let readerCover = new FileReader();
-                    readerCover.onload = function(coverEvent) {
-                        const coverBase64 = coverEvent.target.result;
-                        saveTrackData(categoryName, artistName, songTitle, audioBase64, coverBase64);
-                    };
-                    readerCover.readAsDataURL(coverFile);
-                } else {
-                    saveTrackData(categoryName, artistName, songTitle, audioBase64, "albumcover.png");
+            // Validate based on upload type rules
+            if (uploadType === 'Single') {
+                if (files.length !== 1) {
+                    alert('Single category requires exactly 1 song file.');
+                    return;
                 }
-            };
-            readerAudio.readAsDataURL(audioFile);
+            } else if (uploadType === 'Album') {
+                const isZip = files.length === 1 && files[0].name.endsWith('.zip');
+                if (!isZip && (files.length < 5 || files.length > 15)) {
+                    alert('Album category requires between 5 to 15 songs or a single .zip file.');
+                    return;
+                }
+            } else if (uploadType === 'Mix') {
+                const isZip = files.length === 1 && files[0].name.endsWith('.zip');
+                if (!isZip && (files.length < 1 || files.length > 20)) {
+                    alert('Mix category requires between 1 to 20 songs or a single .zip file.');
+                    return;
+                }
+            }
+
+            // Process cover image first if available
+            if (coverFile) {
+                let readerCover = new FileReader();
+                readerCover.onload = function(coverEvent) {
+                    const coverBase64 = coverEvent.target.result;
+                    processFilesUpload(uploadType, artistName, songTitle, files, coverBase64);
+                };
+                readerCover.readAsDataURL(coverFile);
+            } else {
+                processFilesUpload(uploadType, artistName, songTitle, files, "albumcover.png");
+            }
         }
 
-        function saveTrackData(categoryName, artistName, songTitle, audioBase64, coverBase64) {
-            let artistObj = artistsData.find(a => a.name.toLowerCase() === categoryName.toLowerCase());
-            const newTrack = {
-                title: songTitle,
-                artist: artistName,
-                cover: coverBase64,
-                audio: audioBase64
-            };
+        function processFilesUpload(uploadType, artistName, songTitle, files, coverBase64) {
+            let processedTracks = [];
+            let fileCount = files.length;
+
+            // Check if single zip file
+            if (fileCount === 1 && files[0].name.endsWith('.zip')) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    const zipBase64 = e.target.result;
+                    const newTrack = {
+                        title: songTitle,
+                        artist: artistName,
+                        cover: coverBase64,
+                        zip: zipBase64,
+                        audio: null
+                    };
+                    saveCategoryData(artistName, songTitle, [newTrack], coverBase64);
+                };
+                reader.readAsDataURL(files[0]);
+                return;
+            }
+
+            // Otherwise, process multiple files or single mp3
+            let loadedCount = 0;
+            for (let i = 0; i < fileCount; i++) {
+                let file = files[i];
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    processedTracks.push({
+                        title: fileCount === 1 ? songTitle : (songTitle + " - Track " + (i + 1)),
+                        artist: artistName,
+                        cover: coverBase64,
+                        audio: e.target.result
+                    });
+                    loadedCount++;
+                    if (loadedCount === fileCount) {
+                        saveCategoryData(artistName, songTitle, processedTracks, coverBase64);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveCategoryData(artistName, categoryName, tracksList, coverBase64) {
+            let artistObj = artistsData.find(a => a.name.toLowerCase() === artistName.toLowerCase());
 
             if (artistObj) {
-                artistObj.tracks.push(newTrack);
+                artistObj.tracks.push(...tracksList);
             } else {
                 artistsData.push({
-                    name: categoryName,
+                    name: artistName,
                     cover: coverBase64,
-                    tracks: [newTrack]
+                    tracks: tracksList
                 });
             }
 
             saveAppData();
-            alert('Song successfully uploaded and stored on the website!');
+            alert('Upload successful and stored on the website!');
             resetView();
         }
 
