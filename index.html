@@ -140,7 +140,93 @@
             opacity: 0.8;
         }
 
-        /* Music Grid - 3x3 layout */
+        /* Music List View (matching requested style) */
+        .music-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .music-list-item {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            position: relative;
+        }
+
+        .music-list-item:hover {
+            background-color: #253348;
+            transform: translateX(2px);
+        }
+
+        .item-left {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .item-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 6px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .item-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-subtitle {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 2px;
+        }
+
+        .item-right {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .item-menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+
+        .item-menu-btn:hover {
+            color: var(--primary-color);
+        }
+
+        /* Music Grid for Tracks view */
         .music-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -234,7 +320,7 @@
             color: white;
         }
 
-        /* Admin action buttons on cards */
+        /* Admin action buttons on cards/lists */
         .admin-card-actions {
             position: absolute;
             top: 6px;
@@ -245,7 +331,7 @@
         }
 
         .admin-action-btn {
-            background: rgba(15, 23, 42, 0.8);
+            background: rgba(15, 23, 42, 0.9);
             border: 1px solid var(--border-color);
             color: var(--text-color);
             font-size: 0.65rem;
@@ -482,11 +568,11 @@
         <div id="dynamicDashboardContainer"></div>
         <div class="section-header">
             <div class="title-area">
-                <h2 id="sectionTitle">Albums and Tracks</h2>
+                <h2 id="sectionTitle">Artists</h2>
                 <button class="back-btn" id="backBtn" onclick="resetView()">← Back</button>
             </div>
         </div>
-        <div class="music-grid" id="musicGrid">
+        <div id="mainContentArea">
             <!-- Dynamic elements injected here -->
         </div>
     </div>
@@ -704,19 +790,20 @@
         }
 
         function renderArtists(list) {
-            const grid = document.getElementById('musicGrid');
+            const container = document.getElementById('mainContentArea');
             const title = document.getElementById('sectionTitle');
             const backBtn = document.getElementById('backBtn');
             
-            title.innerText = "Albums and Tracks";
+            title.innerText = "Artists";
             backBtn.style.display = 'none';
-            grid.innerHTML = '';
+            container.innerHTML = '';
             
             if (list.length === 0) {
-                grid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">No artists found.</p>`;
+                container.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No artists found.</p>`;
                 return;
             }
 
+            let listHTML = `<div class="music-list">`;
             list.forEach((artist, index) => {
                 let adminCardControls = '';
                 if (currentUser && currentUser.role === 'admin') {
@@ -726,7 +813,7 @@
                     let deleteArtistBtn = `<button class="admin-action-btn" onclick="deleteArtistProfile(${index}); event.stopPropagation();">Delete</button>`;
 
                     adminCardControls = `
-                        <div class="admin-card-actions" style="display:flex; gap:2px; flex-wrap:wrap; max-width:85px; justify-content:flex-end;">
+                        <div style="display:flex; gap:2px; align-items:center; margin-right: 5px;">
                             ${moveUpBtn}
                             ${moveDownBtn}
                             ${editArtistBtn}
@@ -735,26 +822,30 @@
                     `;
                 }
 
-                grid.innerHTML += `
-                    <div class="music-card" onclick="openArtistTracks('${artist.name}')">
-                        ${adminCardControls}
-                        <div class="card-img-container">
-                            <img src="${artist.cover}" alt="${artist.name}">
+                listHTML += `
+                    <div class="music-list-item" onclick="openArtistTracks('${artist.name}')">
+                        <div class="item-left">
+                            <img src="${artist.cover}" alt="${artist.name}" class="item-img">
+                            <div class="item-info">
+                                <div class="item-title">${artist.name}</div>
+                                <div class="item-subtitle">${artist.tracks.length} track(s) available</div>
+                            </div>
                         </div>
-                        <div class="card-content">
-                            <div class="song-title" title="${artist.name}">${artist.name}</div>
-                            <div class="artist-name">View Tracks</div>
+                        <div class="item-right">
+                            ${adminCardControls}
+                            <button class="item-menu-btn" onclick="event.stopPropagation(); openArtistTracks('${artist.name}')">⋮</button>
                         </div>
                     </div>
                 `;
             });
+            listHTML += `</div>`;
+            container.innerHTML = listHTML;
         }
 
         function moveArtist(index, direction) {
             const newIndex = index + direction;
             if (newIndex < 0 || newIndex >= artistsData.length) return;
 
-            // Swap positions
             const temp = artistsData[index];
             artistsData[index] = artistsData[newIndex];
             artistsData[newIndex] = temp;
@@ -797,19 +888,20 @@
         }
 
         function renderTracks(artistName, tracksList) {
-            const grid = document.getElementById('musicGrid');
+            const container = document.getElementById('mainContentArea');
             const title = document.getElementById('sectionTitle');
             const backBtn = document.getElementById('backBtn');
 
             title.innerText = `${artistName} - Tracks`;
             backBtn.style.display = 'block';
-            grid.innerHTML = '';
+            container.innerHTML = '';
 
             if (tracksList.length === 0) {
-                grid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">No tracks found.</p>`;
+                container.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No tracks found.</p>`;
                 return;
             }
 
+            let listHTML = `<div class="music-list">`;
             tracksList.forEach((track, index) => {
                 const audioId = `audio-${artistName}-${index}`.replace(/[^a-zA-Z0-9-_]/g, '');
                 const artistIndex = artistsData.findIndex(a => a.name === artistName);
@@ -818,44 +910,43 @@
                 let adminControls = '';
                 if (currentUser && currentUser.role === 'admin') {
                     adminControls = `
-                        <div class="admin-card-actions">
+                        <div style="display:flex; gap:2px; margin-right: 5px;">
                             <button class="admin-action-btn" onclick="openEditModal(${artistIndex}, ${trackIndex}); event.stopPropagation();">Edit</button>
                             <button class="admin-action-btn" onclick="deleteTrack(${artistIndex}, ${trackIndex}); event.stopPropagation();">Delete</button>
                         </div>
                     `;
                 }
 
-                let actionButtonsHTML = '';
+                let actionControl = '';
                 if (track.audio) {
-                    actionButtonsHTML = `
+                    actionControl = `
                         <audio id="${audioId}" src="${track.audio}"></audio>
-                        <div class="action-buttons">
-                            <button class="player-btn" id="btn-${audioId}" onclick="togglePlay('${audioId}')">Play ▶</button>
-                            <a href="${track.audio}" download="${track.title}.mp3" class="download-btn">Download</a>
-                        </div>
+                        <button class="player-btn" id="btn-${audioId}" onclick="togglePlay('${audioId}'); event.stopPropagation();" style="max-width: 80px; padding: 4px 8px;">Play ▶</button>
                     `;
                 } else {
-                    actionButtonsHTML = `
-                        <div class="action-buttons">
-                            <a href="${track.zip}" download="${track.title}.zip" class="download-btn" style="flex:1;">Download Zip Bundle</a>
-                        </div>
+                    actionControl = `
+                        <a href="${track.zip}" download="${track.title}.zip" class="download-btn" onclick="event.stopPropagation();" style="max-width: 90px; padding: 4px 8px; text-align:center;">Zip Bundle</a>
                     `;
                 }
 
-                grid.innerHTML += `
-                    <div class="music-card">
-                        ${adminControls}
-                        <div class="card-img-container">
-                            <img src="${track.cover}" alt="${track.title}">
+                listHTML += `
+                    <div class="music-list-item">
+                        <div class="item-left">
+                            <img src="${track.cover}" alt="${track.title}" class="item-img">
+                            <div class="item-info">
+                                <div class="item-title">${track.title}</div>
+                                <div class="item-subtitle">${track.artist}</div>
+                            </div>
                         </div>
-                        <div class="card-content">
-                            <div class="song-title" title="${track.title}">${track.title}</div>
-                            <div class="artist-name">${track.artist}</div>
-                            ${actionButtonsHTML}
+                        <div class="item-right">
+                            ${actionControl}
+                            ${adminControls}
                         </div>
                     </div>
                 `;
             });
+            listHTML += `</div>`;
+            container.innerHTML = listHTML;
         }
 
         function togglePlay(audioId) {
@@ -906,7 +997,7 @@
 
         function globalSearch() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            const grid = document.getElementById('musicGrid');
+            const container = document.getElementById('mainContentArea');
             const title = document.getElementById('sectionTitle');
             const backBtn = document.getElementById('backBtn');
 
@@ -935,7 +1026,7 @@
             currentView = 'global-search';
             title.innerText = `Search Results for "${query}"`;
             backBtn.style.display = 'block';
-            grid.innerHTML = '';
+            container.innerHTML = '';
 
             const matchingArtists = artistsData.filter(artist => 
                 artist.name.toLowerCase().includes(query)
@@ -951,19 +1042,24 @@
             });
 
             if (matchingArtists.length === 0 && matchingTracks.length === 0) {
-                grid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--text-muted);">No matching artists or tracks found.</p>`;
+                container.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No matching artists or tracks found.</p>`;
                 return;
             }
 
+            let searchHTML = `<div class="music-list">`;
+            
             matchingArtists.forEach((artist) => {
-                grid.innerHTML += `
-                    <div class="music-card" onclick="openArtistTracks('${artist.name}')">
-                        <div class="card-img-container">
-                            <img src="${artist.cover}" alt="${artist.name}">
+                searchHTML += `
+                    <div class="music-list-item" onclick="openArtistTracks('${artist.name}')">
+                        <div class="item-left">
+                            <img src="${artist.cover}" alt="${artist.name}" class="item-img">
+                            <div class="item-info">
+                                <div class="item-title">${artist.name}</div>
+                                <div class="item-subtitle">Artist Profile</div>
+                            </div>
                         </div>
-                        <div class="card-content">
-                            <div class="song-title" title="${artist.name}">${artist.name}</div>
-                            <div class="artist-name">Artist / Category</div>
+                        <div class="item-right">
+                            <button class="item-menu-btn">⋮</button>
                         </div>
                     </div>
                 `;
@@ -971,36 +1067,36 @@
 
             matchingTracks.forEach((track, index) => {
                 const audioId = `search-audio-${index}`;
-                let actionButtonsHTML = '';
+                let actionControl = '';
                 if (track.audio) {
-                    actionButtonsHTML = `
+                    actionControl = `
                         <audio id="${audioId}" src="${track.audio}"></audio>
-                        <div class="action-buttons">
-                            <button class="player-btn" id="btn-${audioId}" onclick="togglePlay('${audioId}')">Play ▶</button>
-                            <a href="${track.audio}" download="${track.title}.mp3" class="download-btn">Download</a>
-                        </div>
+                        <button class="player-btn" id="btn-${audioId}" onclick="togglePlay('${audioId}'); event.stopPropagation();" style="max-width: 80px; padding: 4px 8px;">Play ▶</button>
                     `;
                 } else {
-                    actionButtonsHTML = `
-                        <div class="action-buttons">
-                            <a href="${track.zip}" download="${track.title}.zip" class="download-btn" style="flex:1;">Download Zip Bundle</a>
-                        </div>
+                    actionControl = `
+                        <a href="${track.zip}" download="${track.title}.zip" class="download-btn" onclick="event.stopPropagation();" style="max-width: 90px; padding: 4px 8px; text-align:center;">Zip Bundle</a>
                     `;
                 }
 
-                grid.innerHTML += `
-                    <div class="music-card">
-                        <div class="card-img-container">
-                            <img src="${track.cover}" alt="${track.title}">
+                searchHTML += `
+                    <div class="music-list-item">
+                        <div class="item-left">
+                            <img src="${track.cover}" alt="${track.title}" class="item-img">
+                            <div class="item-info">
+                                <div class="item-title">${track.title}</div>
+                                <div class="item-subtitle">${track.artist}</div>
+                            </div>
                         </div>
-                        <div class="card-content">
-                            <div class="song-title" title="${track.title}">${track.title}</div>
-                            <div class="artist-name">${track.artist}</div>
-                            ${actionButtonsHTML}
+                        <div class="item-right">
+                            ${actionControl}
                         </div>
                     </div>
                 `;
             });
+
+            searchHTML += `</div>`;
+            container.innerHTML = searchHTML;
         }
 
         /* Authentication & Dashboard Control Logic */
@@ -1029,7 +1125,6 @@
             const username = document.getElementById('authUsername').value.trim();
             const password = document.getElementById('authPassword').value;
 
-            // Check Admin Credentials
             if (username === 'lisotech' && password === 'Lisotech@1') {
                 currentUser = { username: 'lisotech', role: 'admin' };
                 localStorage.setItem('zamlite_current_user', JSON.stringify(currentUser));
@@ -1098,7 +1193,7 @@
                 dashboardContainer.innerHTML = `
                     <div class="dashboard-panel">
                         <h3>Admin Control Dashboard (${currentUser.username})</h3>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Use the up/down arrows (↑ ↓) on landing page artist profiles to rearrange their display order, or edit/delete profiles and tracks directly.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Use the up/down arrows (↑ ↓) to rearrange profiles, or edit/delete items directly.</p>
                     </div>
                 `;
             } else if (currentUser.role === 'client') {
@@ -1268,7 +1363,6 @@
             resetView();
         }
 
-        /* Admin Delete and Edit Functions */
         function deleteTrack(artistIndex, trackIndex) {
             if (confirm("Are you sure you want to delete this track?")) {
                 artistsData[artistIndex].tracks.splice(trackIndex, 1);
@@ -1328,7 +1422,6 @@
                 span.style.left = Math.random() * 100 + '%';
                 span.style.animationDuration = (2.5 + Math.random() * 3) + 's';
                 span.style.animationDelay = (Math.random() * 4) + 's';
-                
                 span.style.fontSize = (10 + Math.random() * 6) + 'px';
                 
                 container.appendChild(span);
