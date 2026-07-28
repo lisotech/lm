@@ -7,26 +7,14 @@
     <style>
         :root {
             --primary-color: #ff3366;
-            --bg-color: #fafafa;
-            --card-bg: #ffffff;
-            --text-color: #121212;
-            --text-muted: #666666;
-            --header-bg: #ffffff;
-            --border-color: #dddddd;
-            --search-bg: #e1e1e1;
-            --search-text: #121212;
-        }
-
-        [data-theme="dark"] {
-            --primary-color: #ff3366;
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-color: #f0f0f0;
-            --text-muted: #aaaaaa;
-            --header-bg: #181818;
-            --border-color: #333333;
-            --search-bg: #2d2d2d;
-            --search-text: #f0f0f0;
+            --bg-color: #e3f2fd;        /* Light blue background */
+            --card-bg: #1e293b;        /* Dark grey card background */
+            --text-color: #f1f5f9;     /* Light text for contrast */
+            --text-muted: #94a3b8;     /* Muted grey text */
+            --header-bg: #0f172a;      /* Dark header background */
+            --border-color: #334155;   /* Dark border color */
+            --search-bg: #334155;      /* Dark search background */
+            --search-text: #f1f5f9;    /* Light search text */
         }
 
         * {
@@ -119,28 +107,7 @@
             font-size: 1.8rem;
             border-left: 4px solid var(--primary-color);
             padding-left: 10px;
-        }
-
-        /* Theme Toggle Button opposite 'Albums and Track' */
-        .theme-toggle-btn {
-            background-color: var(--search-bg);
             color: var(--text-color);
-            border: 1px solid var(--border-color);
-            padding: 0.3rem 0.6rem;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: opacity 0.2s, transform 0.2s;
-        }
-
-        .theme-toggle-btn:hover {
-            opacity: 0.85;
-            transform: translateY(-1px);
         }
 
         .back-btn {
@@ -170,7 +137,7 @@
             background-color: var(--card-bg);
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -183,7 +150,7 @@
 
         .music-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
         }
 
         /* Small circular profile style photo matching reference image */
@@ -216,6 +183,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
             width: 100%;
+            color: var(--text-color);
         }
 
         .artist-name {
@@ -337,16 +305,13 @@
                 <h2 id="sectionTitle">Albums and Tracks</h2>
                 <button class="back-btn" id="backBtn" onclick="resetView()">← Back</button>
             </div>
-            <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
-                <span id="themeIcon">🌙</span> <span id="themeText">Dark</span>
-            </button>
         </div>
         <div class="music-grid" id="musicGrid">
             <!-- Dynamic elements injected here -->
         </div>
     </div>
 
-    <!-- Custom styled compact footer with blue background and dropping green/orange flowers -->
+    <!-- Custom styled compact footer with blue background and dropping flowers -->
     <footer>
         <div class="footer-flowers-container" id="flowerContainer"></div>
         <div class="footer-content-inner">
@@ -500,22 +465,6 @@
         let currentActiveArtist = null;
         let currentAudio = null;
         let currentPlayingBtn = null;
-
-        function toggleTheme() {
-            const html = document.documentElement;
-            const themeIcon = document.getElementById('themeIcon');
-            const themeText = document.getElementById('themeText');
-            
-            if (html.getAttribute('data-theme') === 'dark') {
-                html.removeAttribute('data-theme');
-                themeIcon.innerText = '🌙';
-                themeText.innerText = 'Dark';
-            } else {
-                html.setAttribute('data-theme', 'dark');
-                themeIcon.innerText = '☀️';
-                themeText.innerText = 'Light';
-            }
-        }
 
         function renderArtists(list) {
             const grid = document.getElementById('musicGrid');
