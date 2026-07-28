@@ -695,7 +695,12 @@
         let currentUser = JSON.parse(localStorage.getItem('zamlite_current_user')) || null;
 
         function saveAppData() {
-            localStorage.setItem('zamlite_artists_data', JSON.stringify(artistsData));
+            try {
+                localStorage.setItem('zamlite_artists_data', JSON.stringify(artistsData));
+            } catch (e) {
+                console.error("Storage quota exceeded or error storing data:", e);
+                alert("Storage limit reached. Please use smaller files or clear browser data.");
+            }
         }
 
         function renderArtists(list) {
@@ -783,7 +788,7 @@
                             <audio id="${audioId}" src="${track.audio}"></audio>
                             <div class="action-buttons">
                                 <button class="player-btn" id="btn-${audioId}" onclick="togglePlay('${audioId}')">Play ▶</button>
-                                <a href="${track.audio}" download class="download-btn" target="_blank">Download</a>
+                                <a href="${track.audio}" download="${track.title}.mp3" class="download-btn">Download</a>
                             </div>
                         </div>
                     </div>
@@ -915,7 +920,7 @@
                             <audio id="${audioId}" src="${track.audio}"></audio>
                             <div class="action-buttons">
                                 <button class="player-btn" id="btn-${audioId}" onclick="togglePlay('${audioId}')">Play ▶</button>
-                                <a href="${track.audio}" download class="download-btn" target="_blank">Download</a>
+                                <a href="${track.audio}" download="${track.title}.mp3" class="download-btn">Download</a>
                             </div>
                         </div>
                     </div>
@@ -1050,7 +1055,7 @@
                                 <label>Choose Local Cover Image (Optional)</label>
                                 <input type="file" id="uploadCoverFile" accept="image/*">
                             </div>
-                            <button type="submit" class="submit-btn">Upload Song</button>
+                            <button type="submit" class="submit-btn">Upload & Store on Website</button>
                         </form>
                     </div>
                 `;
@@ -1082,19 +1087,33 @@
             }
 
             const audioFile = audioInput.files[0];
-            const audioUrl = URL.createObjectURL(audioFile);
+            const coverFile = (coverInput.files && coverInput.files.length > 0) ? coverInput.files[0] : null;
 
-            let coverUrl = "albumcover.png";
-            if (coverInput.files && coverInput.files.length > 0) {
-                coverUrl = URL.createObjectURL(coverInput.files[0]);
-            }
+            let readerAudio = new FileReader();
+            readerAudio.onload = function(audioEvent) {
+                const audioBase64 = audioEvent.target.result;
 
+                if (coverFile) {
+                    let readerCover = new FileReader();
+                    readerCover.onload = function(coverEvent) {
+                        const coverBase64 = coverEvent.target.result;
+                        saveTrackData(artistName, songTitle, audioBase64, coverBase64);
+                    };
+                    readerCover.readAsDataURL(coverFile);
+                } else {
+                    saveTrackData(artistName, songTitle, audioBase64, "albumcover.png");
+                }
+            };
+            readerAudio.readAsDataURL(audioFile);
+        }
+
+        function saveTrackData(artistName, songTitle, audioBase64, coverBase64) {
             let artistObj = artistsData.find(a => a.name.toLowerCase() === artistName.toLowerCase());
             const newTrack = {
                 title: songTitle,
                 artist: currentUser.username,
-                cover: coverUrl,
-                audio: audioUrl
+                cover: coverBase64,
+                audio: audioBase64
             };
 
             if (artistObj) {
@@ -1102,13 +1121,13 @@
             } else {
                 artistsData.push({
                     name: artistName,
-                    cover: coverUrl,
+                    cover: coverBase64,
                     tracks: [newTrack]
                 });
             }
 
             saveAppData();
-            alert('Song uploaded successfully from local storage and added to the library!');
+            alert('Song successfully uploaded and stored permanently on the website library!');
             resetView();
         }
 
