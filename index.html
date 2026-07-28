@@ -160,6 +160,7 @@
             border: 1px solid var(--border-color);
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
         }
 
         .music-card:hover {
@@ -233,6 +234,31 @@
             color: white;
         }
 
+        /* Admin action buttons on cards */
+        .admin-card-actions {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            display: flex;
+            gap: 4px;
+            z-index: 10;
+        }
+
+        .admin-action-btn {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 0.65rem;
+            padding: 2px 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .admin-action-btn:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
         /* Dashboard panels */
         .dashboard-panel {
             background-color: var(--card-bg);
@@ -261,13 +287,19 @@
             color: var(--text-muted);
         }
 
-        .form-group input {
+        .form-group input, .form-group select {
             padding: 0.5rem;
             border-radius: 4px;
             border: 1px solid var(--border-color);
             background-color: var(--search-bg);
             color: var(--search-text);
             font-size: 0.85rem;
+        }
+
+        .form-group input[type="file"] {
+            padding: 0.3rem;
+            font-size: 0.75rem;
+            cursor: pointer;
         }
 
         .submit-btn {
@@ -484,6 +516,27 @@
         </div>
     </div>
 
+    <!-- Edit Track Modal (Admin Feature) -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-card">
+            <button class="close-modal" onclick="closeEditModal()">&times;</button>
+            <h3>Edit Track Details</h3>
+            <form onsubmit="handleEditTrack(event)">
+                <input type="hidden" id="editArtistIndex">
+                <input type="hidden" id="editTrackIndex">
+                <div class="form-group">
+                    <label>Song Title</label>
+                    <input type="text" id="editSongTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Artist Name</label>
+                    <input type="text" id="editArtistName" required>
+                </div>
+                <button type="submit" class="submit-btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Custom styled compact footer with blue background and dropping flowers -->
     <footer>
         <div class="footer-flowers-container" id="flowerContainer"></div>
@@ -558,7 +611,7 @@
     </footer>
 
     <script>
-        let artistsData = [
+        let artistsData = JSON.parse(localStorage.getItem('zamlite_artists_data')) || [
             {
                 name: "Fresh Sound",
                 cover: "albumcover.png",
@@ -641,6 +694,10 @@
         let isRegisterMode = false;
         let currentUser = JSON.parse(localStorage.getItem('zamlite_current_user')) || null;
 
+        function saveAppData() {
+            localStorage.setItem('zamlite_artists_data', JSON.stringify(artistsData));
+        }
+
         function renderArtists(list) {
             const grid = document.getElementById('musicGrid');
             const title = document.getElementById('sectionTitle');
@@ -701,8 +758,22 @@
 
             tracksList.forEach((track, index) => {
                 const audioId = `audio-${artistName}-${index}`.replace(/[^a-zA-Z0-9-_]/g, '');
+                const artistIndex = artistsData.findIndex(a => a.name === artistName);
+                const trackIndex = artistsData[artistIndex].tracks.findIndex(t => t.title === track.title && t.audio === track.audio);
+
+                let adminControls = '';
+                if (currentUser && currentUser.role === 'admin') {
+                    adminControls = `
+                        <div class="admin-card-actions">
+                            <button class="admin-action-btn" onclick="openEditModal(${artistIndex}, ${trackIndex}); event.stopPropagation();">Edit</button>
+                            <button class="admin-action-btn" onclick="deleteTrack(${artistIndex}, ${trackIndex}); event.stopPropagation();">Delete</button>
+                        </div>
+                    `;
+                }
+
                 grid.innerHTML += `
                     <div class="music-card">
+                        ${adminControls}
                         <div class="card-img-container">
                             <img src="${track.cover}" alt="${track.title}">
                         </div>
@@ -884,6 +955,7 @@
                 localStorage.setItem('zamlite_current_user', JSON.stringify(currentUser));
                 closeAuthModal();
                 updateUIState();
+                resetView();
                 alert('Welcome Admin (Lisotech)!');
                 return;
             }
@@ -903,6 +975,7 @@
                 localStorage.setItem('zamlite_current_user', JSON.stringify(currentUser));
                 closeAuthModal();
                 updateUIState();
+                resetView();
                 alert('Account created and logged in successfully!');
             } else {
                 const foundUser = savedUsers.find(u => u.username === username && u.password === password);
@@ -911,6 +984,7 @@
                     localStorage.setItem('zamlite_current_user', JSON.stringify(currentUser));
                     closeAuthModal();
                     updateUIState();
+                    resetView();
                     alert(`Welcome back, ${foundUser.username}!`);
                 } else {
                     alert('Invalid username or password.');
@@ -944,29 +1018,37 @@
                 dashboardContainer.innerHTML = `
                     <div class="dashboard-panel">
                         <h3>Admin Control Dashboard (${currentUser.username})</h3>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Manage platform tracks or system settings from here.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">You can now edit or delete track items directly from any artist's track list view.</p>
                     </div>
                 `;
             } else if (currentUser.role === 'client') {
+                let categoryOptions = artistsData.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
                 dashboardContainer.innerHTML = `
                     <div class="dashboard-panel">
                         <h3>Client Upload Dashboard (${currentUser.username})</h3>
                         <form onsubmit="handleSongUpload(event)">
                             <div class="form-group">
-                                <label>Artist / Category Name</label>
-                                <input type="text" id="uploadArtist" required placeholder="e.g. Fresh Sound or Artist Name">
+                                <label>Select Existing Category/Artist or Type New</label>
+                                <select id="uploadArtistSelect" onchange="toggleNewArtistInput(this.value)">
+                                    ${categoryOptions}
+                                    <option value="NEW">+ Add New Category/Artist</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="newArtistGroup" style="display:none;">
+                                <label>New Category/Artist Name</label>
+                                <input type="text" id="uploadNewArtist" placeholder="Enter new artist name">
                             </div>
                             <div class="form-group">
                                 <label>Song Title</label>
                                 <input type="text" id="uploadTitle" required placeholder="Enter track title">
                             </div>
                             <div class="form-group">
-                                <label>Audio File URL or Filename</label>
-                                <input type="text" id="uploadAudio" required placeholder="e.g. 1.mp3">
+                                <label>Choose Local Audio File (.mp3, .wav)</label>
+                                <input type="file" id="uploadAudioFile" accept="audio/*" required>
                             </div>
                             <div class="form-group">
-                                <label>Cover Image URL or Filename</label>
-                                <input type="text" id="uploadCover" required placeholder="e.g. albumcover.png">
+                                <label>Choose Local Cover Image (Optional)</label>
+                                <input type="file" id="uploadCoverFile" accept="image/*">
                             </div>
                             <button type="submit" class="submit-btn">Upload Song</button>
                         </form>
@@ -975,19 +1057,44 @@
             }
         }
 
+        function toggleNewArtistInput(val) {
+            const group = document.getElementById('newArtistGroup');
+            if (val === 'NEW') {
+                group.style.display = 'flex';
+                document.getElementById('uploadNewArtist').required = true;
+            } else {
+                group.style.display = 'none';
+                document.getElementById('uploadNewArtist').required = false;
+            }
+        }
+
         function handleSongUpload(event) {
             event.preventDefault();
-            const artistName = document.getElementById('uploadArtist').value.trim();
+            const selectVal = document.getElementById('uploadArtistSelect').value;
+            const artistName = selectVal === 'NEW' ? document.getElementById('uploadNewArtist').value.trim() : selectVal;
             const songTitle = document.getElementById('uploadTitle').value.trim();
-            const audioSrc = document.getElementById('uploadAudio').value.trim();
-            const coverSrc = document.getElementById('uploadCover').value.trim();
+            const audioInput = document.getElementById('uploadAudioFile');
+            const coverInput = document.getElementById('uploadCoverFile');
+
+            if (!audioInput.files || audioInput.files.length === 0) {
+                alert('Please select an audio file.');
+                return;
+            }
+
+            const audioFile = audioInput.files[0];
+            const audioUrl = URL.createObjectURL(audioFile);
+
+            let coverUrl = "albumcover.png";
+            if (coverInput.files && coverInput.files.length > 0) {
+                coverUrl = URL.createObjectURL(coverInput.files[0]);
+            }
 
             let artistObj = artistsData.find(a => a.name.toLowerCase() === artistName.toLowerCase());
             const newTrack = {
                 title: songTitle,
                 artist: currentUser.username,
-                cover: coverSrc,
-                audio: audioSrc
+                cover: coverUrl,
+                audio: audioUrl
             };
 
             if (artistObj) {
@@ -995,17 +1102,59 @@
             } else {
                 artistsData.push({
                     name: artistName,
-                    cover: coverSrc,
+                    cover: coverUrl,
                     tracks: [newTrack]
                 });
             }
 
-            alert('Song uploaded successfully and added to the library!');
-            document.getElementById('uploadArtist').value = '';
-            document.getElementById('uploadTitle').value = '';
-            document.getElementById('uploadAudio').value = '';
-            document.getElementById('uploadCover').value = '';
+            saveAppData();
+            alert('Song uploaded successfully from local storage and added to the library!');
             resetView();
+        }
+
+        /* Admin Delete and Edit Functions */
+        function deleteTrack(artistIndex, trackIndex) {
+            if (confirm("Are you sure you want to delete this track?")) {
+                artistsData[artistIndex].tracks.splice(trackIndex, 1);
+                
+                if (artistsData[artistIndex].tracks.length === 0) {
+                    artistsData.splice(artistIndex, 1);
+                    saveAppData();
+                    resetView();
+                } else {
+                    saveAppData();
+                    openArtistTracks(artistsData[artistIndex].name);
+                }
+            }
+        }
+
+        function openEditModal(artistIndex, trackIndex) {
+            const track = artistsData[artistIndex].tracks[trackIndex];
+            document.getElementById('editArtistIndex').value = artistIndex;
+            document.getElementById('editTrackIndex').value = trackIndex;
+            document.getElementById('editSongTitle').value = track.title;
+            document.getElementById('editArtistName').value = track.artist;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function handleEditTrack(event) {
+            event.preventDefault();
+            const artistIndex = parseInt(document.getElementById('editArtistIndex').value);
+            const trackIndex = parseInt(document.getElementById('editTrackIndex').value);
+            const newTitle = document.getElementById('editSongTitle').value.trim();
+            const newArtist = document.getElementById('editArtistName').value.trim();
+
+            artistsData[artistIndex].tracks[trackIndex].title = newTitle;
+            artistsData[artistIndex].tracks[trackIndex].artist = newArtist;
+
+            saveAppData();
+            closeEditModal();
+            alert('Track updated successfully!');
+            openArtistTracks(artistsData[artistIndex].name);
         }
 
         function initFooterFlowers() {
