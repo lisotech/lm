@@ -1027,56 +1027,41 @@
                     </div>
                 `;
             } else if (currentUser.role === 'client') {
-                let categoryOptions = artistsData.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
                 dashboardContainer.innerHTML = `
                     <div class="dashboard-panel">
                         <h3>Client Upload Dashboard (${currentUser.username})</h3>
                         <form onsubmit="handleSongUpload(event)">
                             <div class="form-group">
-                                <label>Select Existing Category/Artist or Type New</label>
-                                <select id="uploadArtistSelect" onchange="toggleNewArtistInput(this.value)">
-                                    ${categoryOptions}
-                                    <option value="NEW">+ Add New Category/Artist</option>
-                                </select>
-                            </div>
-                            <div class="form-group" id="newArtistGroup" style="display:none;">
-                                <label>New Category/Artist Name</label>
-                                <input type="text" id="uploadNewArtist" placeholder="Enter new artist name">
+                                <label>1. Music Category</label>
+                                <input type="text" id="uploadCategory" required placeholder="Enter music category">
                             </div>
                             <div class="form-group">
-                                <label>Song Title</label>
-                                <input type="text" id="uploadTitle" required placeholder="Enter track title">
+                                <label>2. Artist Name</label>
+                                <input type="text" id="uploadArtistName" required placeholder="Enter artist name">
                             </div>
                             <div class="form-group">
-                                <label>Choose Local Audio File (.mp3, .wav)</label>
-                                <input type="file" id="uploadAudioFile" accept="audio/*" required>
+                                <label>3. Song Title</label>
+                                <input type="text" id="uploadTitle" required placeholder="Enter song title">
                             </div>
                             <div class="form-group">
-                                <label>Choose Local Cover Image (Optional)</label>
+                                <label>4. Choose Audio File (mp3)</label>
+                                <input type="file" id="uploadAudioFile" accept="audio/mp3,audio/*" required>
+                            </div>
+                            <div class="form-group">
+                                <label>5. Choose Cover Image</label>
                                 <input type="file" id="uploadCoverFile" accept="image/*">
                             </div>
-                            <button type="submit" class="submit-btn">Upload & Store on Website</button>
+                            <button type="submit" class="submit-btn">Upload</button>
                         </form>
                     </div>
                 `;
             }
         }
 
-        function toggleNewArtistInput(val) {
-            const group = document.getElementById('newArtistGroup');
-            if (val === 'NEW') {
-                group.style.display = 'flex';
-                document.getElementById('uploadNewArtist').required = true;
-            } else {
-                group.style.display = 'none';
-                document.getElementById('uploadNewArtist').required = false;
-            }
-        }
-
         function handleSongUpload(event) {
             event.preventDefault();
-            const selectVal = document.getElementById('uploadArtistSelect').value;
-            const artistName = selectVal === 'NEW' ? document.getElementById('uploadNewArtist').value.trim() : selectVal;
+            const categoryName = document.getElementById('uploadCategory').value.trim();
+            const artistName = document.getElementById('uploadArtistName').value.trim();
             const songTitle = document.getElementById('uploadTitle').value.trim();
             const audioInput = document.getElementById('uploadAudioFile');
             const coverInput = document.getElementById('uploadCoverFile');
@@ -1097,21 +1082,21 @@
                     let readerCover = new FileReader();
                     readerCover.onload = function(coverEvent) {
                         const coverBase64 = coverEvent.target.result;
-                        saveTrackData(artistName, songTitle, audioBase64, coverBase64);
+                        saveTrackData(categoryName, artistName, songTitle, audioBase64, coverBase64);
                     };
                     readerCover.readAsDataURL(coverFile);
                 } else {
-                    saveTrackData(artistName, songTitle, audioBase64, "albumcover.png");
+                    saveTrackData(categoryName, artistName, songTitle, audioBase64, "albumcover.png");
                 }
             };
             readerAudio.readAsDataURL(audioFile);
         }
 
-        function saveTrackData(artistName, songTitle, audioBase64, coverBase64) {
-            let artistObj = artistsData.find(a => a.name.toLowerCase() === artistName.toLowerCase());
+        function saveTrackData(categoryName, artistName, songTitle, audioBase64, coverBase64) {
+            let artistObj = artistsData.find(a => a.name.toLowerCase() === categoryName.toLowerCase());
             const newTrack = {
                 title: songTitle,
-                artist: currentUser.username,
+                artist: artistName,
                 cover: coverBase64,
                 audio: audioBase64
             };
@@ -1120,14 +1105,14 @@
                 artistObj.tracks.push(newTrack);
             } else {
                 artistsData.push({
-                    name: artistName,
+                    name: categoryName,
                     cover: coverBase64,
                     tracks: [newTrack]
                 });
             }
 
             saveAppData();
-            alert('Song successfully uploaded and stored permanently on the website library!');
+            alert('Song successfully uploaded and stored on the website!');
             resetView();
         }
 
