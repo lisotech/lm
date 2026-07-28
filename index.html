@@ -580,7 +580,7 @@
               </a>
 
               <!-- WhatsApp Layout -->
-              <a href="https://wa.me/message/NEGCGNOZ4BOHP1" target="_blank" style="
+              <a href="https://wa.me/260974101130" target="_blank" style="
                     width:75px;
                     height:24px;
                     background-color: #25D366;
@@ -768,7 +768,6 @@
             const newName = prompt("Edit Artist / Category Name:", artist.name);
             if (newName && newName.trim() !== "") {
                 artist.name = newName.trim();
-                // Also update track artist name references if desired, or keep them separate
                 saveAppData();
                 renderArtists(artistsData);
             }
@@ -1179,7 +1178,6 @@
             const files = audioInput.files;
             const coverFile = (coverInput.files && coverInput.files.length > 0) ? coverInput.files[0] : null;
 
-            // Validate based on upload type rules
             if (uploadType === 'Single') {
                 if (files.length !== 1) {
                     alert('Single category requires exactly 1 song file.');
