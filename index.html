@@ -717,19 +717,69 @@
                 return;
             }
 
-            list.forEach((artist) => {
+            list.forEach((artist, index) => {
+                let adminCardControls = '';
+                if (currentUser && currentUser.role === 'admin') {
+                    let moveUpBtn = index > 0 ? `<button class="admin-action-btn" onclick="moveArtist(${index}, -1); event.stopPropagation();" title="Move Up">↑</button>` : '';
+                    let moveDownBtn = index < list.length - 1 ? `<button class="admin-action-btn" onclick="moveArtist(${index}, 1); event.stopPropagation();" title="Move Down">↓</button>` : '';
+                    let editArtistBtn = `<button class="admin-action-btn" onclick="openEditArtistModal(${index}); event.stopPropagation();">Edit</button>`;
+                    let deleteArtistBtn = `<button class="admin-action-btn" onclick="deleteArtistProfile(${index}); event.stopPropagation();">Delete</button>`;
+
+                    adminCardControls = `
+                        <div class="admin-card-actions" style="display:flex; gap:2px; flex-wrap:wrap; max-width:85px; justify-content:flex-end;">
+                            ${moveUpBtn}
+                            ${moveDownBtn}
+                            ${editArtistBtn}
+                            ${deleteArtistBtn}
+                        </div>
+                    `;
+                }
+
                 grid.innerHTML += `
                     <div class="music-card" onclick="openArtistTracks('${artist.name}')">
+                        ${adminCardControls}
                         <div class="card-img-container">
                             <img src="${artist.cover}" alt="${artist.name}">
                         </div>
                         <div class="card-content">
                             <div class="song-title" title="${artist.name}">${artist.name}</div>
-                            <div class="artist-name">Explore Tracks</div>
+                            <div class="artist-name">${artist.tracks.length} Track(s) Available</div>
                         </div>
                     </div>
                 `;
             });
+        }
+
+        function moveArtist(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= artistsData.length) return;
+
+            // Swap positions
+            const temp = artistsData[index];
+            artistsData[index] = artistsData[newIndex];
+            artistsData[newIndex] = temp;
+
+            saveAppData();
+            renderArtists(artistsData);
+        }
+
+        function openEditArtistModal(index) {
+            const artist = artistsData[index];
+            const newName = prompt("Edit Artist / Category Name:", artist.name);
+            if (newName && newName.trim() !== "") {
+                artist.name = newName.trim();
+                // Also update track artist name references if desired, or keep them separate
+                saveAppData();
+                renderArtists(artistsData);
+            }
+        }
+
+        function deleteArtistProfile(index) {
+            if (confirm(`Are you sure you want to delete the artist profile "${artistsData[index].name}" and all associated tracks?`)) {
+                artistsData.splice(index, 1);
+                saveAppData();
+                renderArtists(artistsData);
+            }
         }
 
         function openArtistTracks(artistName) {
@@ -764,7 +814,7 @@
             tracksList.forEach((track, index) => {
                 const audioId = `audio-${artistName}-${index}`.replace(/[^a-zA-Z0-9-_]/g, '');
                 const artistIndex = artistsData.findIndex(a => a.name === artistName);
-                const trackIndex = artistsData[artistIndex].tracks.findIndex(t => t.title === track.title && t.audio === track.audio);
+                const trackIndex = artistsData[artistIndex].tracks.findIndex(t => t.title === track.title && (t.audio === track.audio || t.zip === track.zip));
 
                 let adminControls = '';
                 if (currentUser && currentUser.role === 'admin') {
@@ -1049,7 +1099,7 @@
                 dashboardContainer.innerHTML = `
                     <div class="dashboard-panel">
                         <h3>Admin Control Dashboard (${currentUser.username})</h3>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">You can now edit or delete track items directly from any artist's track list view.</p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Use the up/down arrows (↑ ↓) on landing page artist profiles to rearrange their display order, or edit/delete profiles and tracks directly.</p>
                     </div>
                 `;
             } else if (currentUser.role === 'client') {
@@ -1149,7 +1199,6 @@
                 }
             }
 
-            // Process cover image first if available
             if (coverFile) {
                 let readerCover = new FileReader();
                 readerCover.onload = function(coverEvent) {
@@ -1166,7 +1215,6 @@
             let processedTracks = [];
             let fileCount = files.length;
 
-            // Check if single zip file
             if (fileCount === 1 && files[0].name.endsWith('.zip')) {
                 let reader = new FileReader();
                 reader.onload = function(e) {
@@ -1178,13 +1226,12 @@
                         zip: zipBase64,
                         audio: null
                     };
-                    saveCategoryData(artistName, songTitle, [newTrack], coverBase64);
+                    saveCategoryData(artistName, [newTrack], coverBase64);
                 };
                 reader.readAsDataURL(files[0]);
                 return;
             }
 
-            // Otherwise, process multiple files or single mp3
             let loadedCount = 0;
             for (let i = 0; i < fileCount; i++) {
                 let file = files[i];
@@ -1198,14 +1245,14 @@
                     });
                     loadedCount++;
                     if (loadedCount === fileCount) {
-                        saveCategoryData(artistName, songTitle, processedTracks, coverBase64);
+                        saveCategoryData(artistName, processedTracks, coverBase64);
                     }
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        function saveCategoryData(artistName, categoryName, tracksList, coverBase64) {
+        function saveCategoryData(artistName, tracksList, coverBase64) {
             let artistObj = artistsData.find(a => a.name.toLowerCase() === artistName.toLowerCase());
 
             if (artistObj) {
